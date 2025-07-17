@@ -7,8 +7,11 @@
 #include <deque>
 #include <functional>
 #include <iomanip>
+#include <optional>
+#include <variant>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <print>
 #include <queue>

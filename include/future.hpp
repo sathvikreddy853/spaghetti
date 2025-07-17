@@ -5,37 +5,48 @@
 
 namespace spaghetti {
 
-enum class future_status {
-    READY,
-    DEFERRED,
-    TIMEOUT,
-};
-
-template <typename T> class State {
-    public:
-    
-    State (bool valid = true, bool readable = false, value = std::nullopt)
-    : valid (valid), readable (readable), value (value) {}
-    
-    private: 
+struct SharedState {
+    int value;
+    bool valid    = false;
+    bool readable = false;
     std::condition_variable cv;
-    bool valid; 
-    bool readable;
-    std::optional<T> value;
-    void wait() const;
+    std::mutex mutex;
 };
 
-template <typename T> class Future {
-    Future () = default;
-    T get ();
-    bool valid ();
-    void wait () const;
+struct Future {
+    Future () {}
 
-    private:
-    State state;
-    friend State;
+    Future (std::shared_ptr<SharedState> state) : state (state) {
+        state->mutex.lock ();
+        state->valid = true;
+        state->mutex.unlock ();
+    }
+
+    int get () {
+        std::unique_lock lock (state->mutex);
+        state->cv.wait (lock, [this] { return state->readable; });
+        return state->value;
+    }
+
+    std::shared_ptr<SharedState> state;
+};
+
+struct Promise {
+    Promise () { state = std::make_shared<SharedState> (); }
+
+    Future get_future () { return Future (state); }
+
+    void set_value (int value) {
+        std::unique_lock lock (state->mutex);
+        state->value    = value;
+        state->readable = true;
+        lock.unlock ();
+        state->cv.notify_one ();
+    }
+
+    std::shared_ptr<SharedState> state;
 };
 
 } // namespace spaghetti
 
-#endif // SPAGHETTI_FUTURE
+#endif
