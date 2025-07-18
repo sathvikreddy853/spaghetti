@@ -5,14 +5,14 @@
 #include <cassert>
 #include <condition_variable>
 #include <deque>
+#include <exception>
 #include <functional>
 #include <iomanip>
-#include <optional>
-#include <variant>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <print>
 #include <queue>
 #include <semaphore>
@@ -22,6 +22,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
+#include <variant>
 #include <vector>
 
 namespace spaghetti {
